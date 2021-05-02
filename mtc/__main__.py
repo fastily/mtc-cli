@@ -1,4 +1,4 @@
-"""Classes and methods supporting MTC!"""
+"""MTC! main driver and associated classes/methods"""
 
 import argparse
 import logging
@@ -32,17 +32,28 @@ _USER_AT_PROJECT = "{{{{User at project|{}|w|en}}}}"
 
 
 class MTC(FastilyBotBase):
+    """Methods for generating wikitext and performing transfers"""
 
     def __init__(self, wiki: Wiki) -> None:
-        super().__init__(wiki)
+        """Initializer, creates a new MTC instance.
 
-        # if not wiki.login(_USER, pw := load_px().get(_USER)): #or not self.com.login(_USER, pw):
-        #     raise RuntimeError("Could not login, is your username and password right?")
+        Args:
+            wiki (Wiki): The Wiki object to use, this should already be logged-in.
+        """
+        super().__init__(wiki)
 
         self.blacklist: set[str] = set(self.wiki.links_on_page(f"{_MTC}/Blacklist"))
         self.whitelist: set[str] = set(self.wiki.links_on_page(f"{_MTC}/Whitelist"))
 
     def generate_commons_title(self, titles: list[str]) -> dict:
+        """Generates a title for a file on enwp in preparation for transfer to Commons.  If the name of the enwp file is not on Commons, then try various permutations of the title.
+
+        Args:
+            titles (list[str]): The enwp titles to generate Commons titles for 
+
+        Returns:
+            dict: A dict such that each key is the local file name and the value is the generated title for Commons.
+        """
         out = {s: s for s in titles}
 
         for s in XQuery.exists_filter(self.com, titles):
@@ -52,6 +63,16 @@ class MTC(FastilyBotBase):
         return out
 
     def fuzz_for_param(self, target_key: str, t: WikiTemplate, default: str = "") -> str:
+        """Fuzzy match template parameters to a given `target_key` and return the result.
+
+        Args:
+            target_key (str): The target key to fetch.  Will try ignore-case & underscore/space permutations
+            t (WikiTemplate): The WikiTemplate to check
+            default (str, optional): The default return value if nothing matching `target_key` was found. Defaults to "".
+
+        Returns:
+            str: The value associated with `target_key`, or the empty `str` if no match was found.
+        """
         if not t:
             return default
 
@@ -59,6 +80,16 @@ class MTC(FastilyBotBase):
         return str(next((t[k] for k in t if rgx.match(k)), default)).strip()
 
     def generate_text(self, title: str, is_own_work: bool, ii_l: list[ImageInfo]) -> str:
+        """Generates Commons wikitext for the specified enwp file
+
+        Args:
+            title (str): The enwp title to make Commons wikitext for
+            is_own_work (bool): Set `True` if this file is own work
+            ii_l (list[ImageInfo]): The `ImageInfo` associated with `title`.
+
+        Returns:
+            str: The Commons wikitext generated for `title`.
+        """
         if not (ii_l):
             log.error(f"No image info found for '{title}', please verify this exists on wiki.")
             return
@@ -110,7 +141,6 @@ class MTC(FastilyBotBase):
         # Add any Commons-compatible top-level templates to License section.
         lic_section = "== {{int:filedesc}} =="
         for t in doc_root.all_templates():
-            # print("HERe")
             lic_section += f"\n{t}"
             t.drop()
 
@@ -127,7 +157,8 @@ class MTC(FastilyBotBase):
             }}}}\n\n""") + lic_section
 
         desc = re.sub(r"(?<=\[\[)(.+?\]\])", "w:\\1", desc)  # add enwp prefix to links
-        desc = re.sub(r"(?i)\[\[(w::|w:w:)", "[[w:", desc)  # Remove any double colons in interwiki links
+        desc = re.sub(r"(?i)\[\[w::", "[[w:", desc)  # Remove any double colons in interwiki links
+        desc = re.sub(r"(?i)\[\[w:w:", "[[w:", desc)  # Remove duplicate interwiki prefixes
         desc = re.sub(r"\n{3,}", "\n", desc)  # Remove excessive spacing
 
         # Generate Upload Log Section
@@ -138,7 +169,15 @@ class MTC(FastilyBotBase):
 
         return desc + "\n|}\n\n{{Subst:Unc}}"
 
-    def transfer(self, titles: list[str], force: bool = False, dry: bool = False, tag: bool = False) -> str:
+    def transfer(self, titles: list[str], force: bool = False, dry: bool = False, tag: bool = False):
+        """Transfer a list of files
+
+        Args:
+            titles (list[str]): The titles to transfer
+            force (bool, optional): Set `True` to disable the whitelist/blacklist sanity check. Defaults to False.
+            dry (bool, optional): Set `True` to only print the generated wikitext to the terminal. Does not perform an actual transfer. Defaults to False.
+            tag (bool, optional): Set `True` to tag the enwp file for deleteion after a successful transfer. Defaults to False.
+        """
         if not titles:
             return
 
