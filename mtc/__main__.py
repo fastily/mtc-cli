@@ -40,7 +40,7 @@ class MTC(FastilyBotBase):
         Args:
             wiki (Wiki): The Wiki object to use, this should already be logged-in.
         """
-        super().__init__(wiki)
+        super().__init__(wiki, auto_login=True)
 
         self.blacklist: set[str] = set(self.wiki.links_on_page(f"{_MTC}/Blacklist"))
         self.whitelist: set[str] = set(self.wiki.links_on_page(f"{_MTC}/Whitelist"))
