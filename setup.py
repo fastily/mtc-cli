@@ -4,20 +4,20 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="mtc",
-    version="1.1.2",
+    name="mtc-cli",
+    version="0.0.1",
     author="Fastily",
     author_email="fastily@users.noreply.github.com",
     description="A simple CLI tool for moving enwp files to Commons",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/fastily/mtc2",
+    url="https://github.com/fastily/mtc-cli",
     project_urls={
-        "Bug Tracker": "https://github.com/fastily/mtc2/issues",
+        "Bug Tracker": "https://github.com/fastily/mtc-cli/issues",
     },
     include_package_data=True,
     packages=setuptools.find_packages(include=["mtc"]),
-    install_requires=["fastilybot2", "python-dateutil", "rich", "requests"],
+    install_requires=["fastilybot"],
     entry_points={
         'console_scripts': [
             'mtc = mtc.__main__:_main'

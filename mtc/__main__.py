@@ -7,7 +7,6 @@ import re
 from pathlib import Path
 from random import randint
 from tempfile import NamedTemporaryFile
-from textwrap import dedent
 
 import requests
 
@@ -17,7 +16,7 @@ from pwiki.dwrap import ImageInfo
 from pwiki.mquery import MQuery
 from pwiki.ns import NS
 from pwiki.wiki import Wiki
-from pwiki.wgen import load_px
+from pwiki.wgen import load_px, setup_px
 from pwiki.wparser import WParser, WikiTemplate
 
 from fastilybot.core import FastilyBotBase, XQuery
@@ -25,9 +24,7 @@ from fastilybot.core import FastilyBotBase, XQuery
 
 log = logging.getLogger(__name__)
 
-_VERSION = "1.1.2"
 _MTC = "Wikipedia:MTC!"
-_USER = "FSock"
 _USER_AT_PROJECT = "{{{{User at project|{}|w|en}}}}"
 
 
@@ -144,17 +141,15 @@ class MTC(FastilyBotBase):
             lic_section += f"\n{t}"
             t.drop()
 
-        # fill out Information Template
-        desc = dedent(f"""\
-            == {{{{int:filedesc}}}} ==
-            {{{{Information
-            |description={self.fuzz_for_param("Description", info)}{str(doc_root).strip()}
-            |date={self.fuzz_for_param("Date", info)}
-            |source={self.fuzz_for_param("Source", info, '{{Own work by original uploader}}' if is_own_work else '')}
-            |author={self.fuzz_for_param("Author", info, '[[User:{u}|{u}]]'.format(u=uploader) if is_own_work else '')}
-            |permission={self.fuzz_for_param("Permission", info)}
-            |other versions={self.fuzz_for_param("Other_versions", info)}
-            }}}}\n\n""") + lic_section
+        # fill out Information Template.  Don't use dedent, breaks on interpolated newlines
+        desc = "== {{int:filedesc}} ==\n{{Information\n" + \
+            f'|description={self.fuzz_for_param("Description", info)}{str(doc_root).strip()}\n' + \
+            f'|date={self.fuzz_for_param("Date", info)}\n' + \
+            f'|source={self.fuzz_for_param("Source", info, "{{Own work by original uploader}}" if is_own_work else "")}\n' + \
+            f'|author={self.fuzz_for_param("Author", info, "[[User:{u}|{u}]]".format(u=uploader) if is_own_work else "")}\n' + \
+            f'|permission={self.fuzz_for_param("Permission", info)}\n' + \
+            f'|other versions={self.fuzz_for_param("Other_versions", info)}\n' + \
+            "}}\n\n" + lic_section
 
         desc = re.sub(r"(?<=\[\[)(.+?\]\])", "w:\\1", desc)  # add enwp prefix to links
         desc = re.sub(r"(?i)\[\[w::", "[[w:", desc)  # Remove any double colons in interwiki links
@@ -199,13 +194,13 @@ class MTC(FastilyBotBase):
 
             with NamedTemporaryFile(buffering=0) as f:
                 f.write(requests.get(image_infos[title][0].url).content)
-                if not self.com.upload(Path(f.name), self.com.nss(com_title), desc, f"Transferred from en.wikipedia ([[w:{_MTC}|MTC!]]) ({_VERSION})"):
+                if not self.com.upload(Path(f.name), self.com.nss(com_title), desc, f"Transferred from en.wikipedia"):
                     fails.append(title)
                     log.error("Failed to transfer '%s'", title)
                     continue
 
             if tag:
-                self.wiki.edit(title, prepend=f"{{{{subst:ncd|{title}}}}}\n", summary=f"Transferred to Commons ([[{_MTC}|MTC!]]) ({_VERSION})")
+                self.wiki.edit(title, prepend=f"{{{{subst:ncd|{title}}}}}\n", summary=f"Transferred to Commons")
 
         if fails:
             log.warning("Failed with %d errors: %s", len(fails), fails)
@@ -215,11 +210,17 @@ def _main() -> None:
     """Main driver, to be run if this script is invoked directly."""
 
     cli_parser = argparse.ArgumentParser(description="mtc CLI")
+    cli_parser.add_argument('-u', type=str, default="FSock", metavar="username", help="the username to use")
     cli_parser.add_argument('-f', action='store_true', help="Force (ignore filter) file transfer(s)")
     cli_parser.add_argument('-d', action='store_true', help="Activate dry run/debug mode (does not transfer files)")
     cli_parser.add_argument('-t', action='store_true', help="Add a Now Commons tag to the enwp file")
+    cli_parser.add_argument("--wgen", action='store_true', help="run wgen password manager")
     cli_parser.add_argument('titles', type=str, nargs='*', help='Files, usernames, templates, or categories')
     args = cli_parser.parse_args()
+
+    if args.wgen:
+        setup_px()
+        return
 
     if not args.titles:
         cli_parser.print_help()
@@ -232,7 +233,7 @@ def _main() -> None:
         lg.setLevel("DEBUG")
 
     l = set()
-    wiki = Wiki(username=_USER, password=load_px().get(_USER))
+    wiki = Wiki(username=args.u, password=load_px().get(args.u))
     for s in args.titles:
         if wiki.in_ns(s, NS.FILE):
             l.add(s)
