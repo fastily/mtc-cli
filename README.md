@@ -7,6 +7,12 @@ mtc-cli is a command line tool that helps simplify and automate file imports fro
 
 This is the rewritten, spiritual successor to the original [MTC!](https://github.com/fastily/mtc) tool.
 
+### Install
+```bash
+pip install mtc-cli
+```
+
+### Usage
 ```
 usage: __main__.py [-h] [-u username] [-f] [-d] [-t] [--wgen] [titles ...]
 
