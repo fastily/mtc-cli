@@ -193,7 +193,7 @@ class MTC(FastilyBotBase):
                 continue
 
             with NamedTemporaryFile(buffering=0) as f:
-                f.write(requests.get(image_infos[title][0].url).content)
+                f.write(requests.get(image_infos[title][0].url, headers={"User-Agent": "mtc-cli"}).content)
                 if not self.com.upload(Path(f.name), self.com.nss(com_title), desc, f"Transferred from en.wikipedia"):
                     fails.append(title)
                     log.error("Failed to transfer '%s'", title)
