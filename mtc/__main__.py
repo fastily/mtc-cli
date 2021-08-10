@@ -159,7 +159,7 @@ class MTC(FastilyBotBase):
         # Generate Upload Log Section
         desc += "\n\n== {{Original upload log}} ==\n" + f"{{{{Original file page|en.wikipedia|{self.wiki.nss(title)}}}}}" + "\n{| class=\"wikitable\"\n! {{int:filehist-datetime}} !! {{int:filehist-dimensions}} !! {{int:filehist-user}} !! {{int:filehist-comment}}"
         for ii in ii_l:
-            ii.summary = ii.summary.replace('\n', ' ').replace('  ', ' ')
+            ii.summary = ii.summary.replace('\n', ' ').replace('  ', ' ') if ii.summary else ''
             desc += f"\n|-\n| {ii.timestamp:%Y-%m-%d %H:%M:%S} || {ii.height} × {ii.width} || [[w:User:{ii.user}|{ii.user}]] || ''<nowiki>{ii.summary}</nowiki>''"
 
         return desc + "\n|}\n\n{{Subst:Unc}}"
