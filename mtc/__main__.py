@@ -136,7 +136,7 @@ class MTC(FastilyBotBase):
             info.drop()
 
         # Add any Commons-compatible top-level templates to License section.
-        lic_section = "== {{int:filedesc}} =="
+        lic_section = "== {{int:license-header}} =="
         for t in doc_root.all_templates():
             lic_section += f"\n{t}"
             t.drop()
