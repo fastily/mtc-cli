@@ -14,20 +14,19 @@ pip install mtc-cli
 
 ### Usage
 ```
-usage: __main__.py [-h] [-u username] [-f] [-d] [-t] [--wgen] [titles ...]
+usage: __main__.py [-h] [-u username] [-f] [-d] [-t] [titles ...]
 
 mtc CLI
 
 positional arguments:
   titles       Files, usernames, templates, or categories
 
-optional arguments:
+options:
   -h, --help   show this help message and exit
   -u username  the username to use
   -f           Force (ignore filter) file transfer(s)
   -d           Activate dry run/debug mode (does not transfer files)
   -t           Add a Now Commons tag to the enwp file
-  --wgen       run wgen password manager
 ```
 
-Note: you must run this program with the `--wgen` flag to authenticate yourself before you can perform any transfers.
+👉 Password is set via env variable `<USERNAME>_PW`, such that `<USERNAME>` is the username of the bot in all caps.

@@ -16,7 +16,6 @@ from pwiki.dwrap import ImageInfo
 from pwiki.mquery import MQuery
 from pwiki.ns import NS
 from pwiki.wiki import Wiki
-from pwiki.wgen import load_px, setup_px
 from pwiki.wparser import WParser, WikiTemplate
 
 from fastilybot.core import FastilyBotBase, XQuery
@@ -214,13 +213,8 @@ def _main() -> None:
     cli_parser.add_argument('-f', action='store_true', help="Force (ignore filter) file transfer(s)")
     cli_parser.add_argument('-d', action='store_true', help="Activate dry run/debug mode (does not transfer files)")
     cli_parser.add_argument('-t', action='store_true', help="Add a Now Commons tag to the enwp file")
-    cli_parser.add_argument("--wgen", action='store_true', help="run wgen password manager")
     cli_parser.add_argument('titles', type=str, nargs='*', help='Files, usernames, templates, or categories')
     args = cli_parser.parse_args()
-
-    if args.wgen:
-        setup_px()
-        return
 
     if not args.titles:
         cli_parser.print_help()
@@ -233,7 +227,7 @@ def _main() -> None:
         lg.setLevel("DEBUG")
 
     l = set()
-    wiki = Wiki(username=args.u, password=load_px().get(args.u))
+    wiki = Wiki(username=args.u)
     for s in args.titles:
         if wiki.in_ns(s, NS.FILE):
             l.add(s)
