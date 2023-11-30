@@ -1,1 +1,1 @@
-fastilybot==2.1.0
+fastilybot==2.2.0
