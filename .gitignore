@@ -17,7 +17,7 @@ dist
 *.egg-info
 
 # virtualenv
-venv_mtc
+venv_mtc_cli
 
 scratch.py
 *.pickle

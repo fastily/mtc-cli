@@ -1,1 +1,2 @@
-fastilybot==2.2.0
+pwiki
+rich==13.7.1

@@ -14,19 +14,19 @@ pip install mtc-cli
 
 ### Usage
 ```
-usage: __main__.py [-h] [-u username] [-f] [-d] [-t] [titles ...]
+usage: __main__.py [-h] [-u username] [-f] [-d] [-a api_endpoint] [titles ...]
 
 mtc CLI
 
 positional arguments:
-  titles       Files, usernames, templates, or categories
+  titles           Files, usernames, templates, or categories
 
 options:
-  -h, --help   show this help message and exit
-  -u username  the username to use
-  -f           Force (ignore filter) file transfer(s)
-  -d           Activate dry run/debug mode (does not transfer files)
-  -t           Add a Now Commons tag to the enwp file
+  -h, --help       show this help message and exit
+  -u username      the username to use
+  -f               Force (ignore filter) file transfer(s)
+  -d               Activate dry run/debug mode (does not transfer files)
+  -a api_endpoint  The default desc generation API endpoint to use. Defaults to public toolforge instance.
 ```
 
 👉 Password is set via env variable `<USERNAME>_PW`, such that `<USERNAME>` is the username of the bot in all caps.
