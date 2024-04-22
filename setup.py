@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="mtc-cli",
-    version="0.1.0",
+    version="0.2.0",
     author="Fastily",
     author_email="fastily@users.noreply.github.com",
     description="A simple CLI tool for moving enwp files to Commons",
